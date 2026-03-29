@@ -1,6 +1,12 @@
 """Backend registry for OpCodeReverseTool."""
 
-BACKEND_REGISTRY = {}
+from opcode_tool.backends.ghidra import GhidraBackend
+from opcode_tool.backends.radare2 import Radare2Backend
+
+BACKEND_REGISTRY = {
+    'ghidra': GhidraBackend,
+    'radare2': Radare2Backend,
+}
 
 
 def get_backend(name: str):
@@ -17,5 +23,7 @@ def get_backend(name: str):
     """
     if name not in BACKEND_REGISTRY:
         available = ', '.join(BACKEND_REGISTRY.keys())
-        raise ValueError(f"Unknown backend '{name}'. Available: {available}")
+        raise ValueError(
+            f"Unknown backend '{name}'. Available: {available}"
+        )
     return BACKEND_REGISTRY[name]
