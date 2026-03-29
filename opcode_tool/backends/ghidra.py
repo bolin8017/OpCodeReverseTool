@@ -19,6 +19,13 @@ class GhidraBackend(BaseBackend):
     # Ghidra spends most time waiting for I/O
     worker_multiplier = 2
 
+    def __init__(self, args: argparse.Namespace, output_dir: str):
+        super().__init__(args, output_dir)
+        self._ghidra_path = os.path.normpath(
+            os.path.expanduser(self.args.ghidra)
+        ) if self.args.ghidra else ''
+        self._script_path = os.path.join(SCRIPTS_DIR, GHIDRA_SCRIPT_NAME)
+
     @classmethod
     def add_arguments(cls, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
@@ -27,19 +34,14 @@ class GhidraBackend(BaseBackend):
         )
 
     def validate_environment(self) -> None:
-        if not self.args.ghidra:
+        if not self._ghidra_path:
             raise RuntimeError(
                 "Ghidra backend requires -g/--ghidra argument"
             )
-        self._ghidra_path = os.path.normpath(
-            os.path.expanduser(self.args.ghidra)
-        )
         if not os.path.exists(self._ghidra_path):
             raise RuntimeError(
                 f"Ghidra headless analyzer not found at {self._ghidra_path}"
             )
-
-        self._script_path = os.path.join(SCRIPTS_DIR, GHIDRA_SCRIPT_NAME)
         if not os.path.exists(self._script_path):
             raise RuntimeError(
                 f"Ghidra script not found at {self._script_path}"
