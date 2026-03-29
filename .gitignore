@@ -61,3 +61,6 @@ sample_binaries/
 *.gpr
 *.rep/
 *.lock
+
+# Superpowers docs (local only)
+docs/superpowers/
