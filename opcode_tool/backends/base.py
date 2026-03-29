@@ -1,6 +1,7 @@
 import argparse
 import logging
 from abc import ABC, abstractmethod
+from typing import Dict, List
 
 
 class BaseBackend(ABC):
@@ -29,7 +30,7 @@ class BaseBackend(ABC):
 
     @abstractmethod
     def extract_features(self, input_file: str, timeout: int,
-                         extraction_logger: logging.Logger) -> list[dict]:
+                         extraction_logger: logging.Logger) -> List[Dict]:
         """Extract opcodes from a binary file.
 
         Args:

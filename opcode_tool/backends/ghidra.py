@@ -4,6 +4,7 @@ import shutil
 import logging
 import argparse
 import subprocess
+from typing import Dict, List
 
 from opcode_tool.backends.base import BaseBackend
 
@@ -48,7 +49,7 @@ class GhidraBackend(BaseBackend):
             )
 
     def extract_features(self, input_file: str, timeout: int,
-                         extraction_logger: logging.Logger) -> list[dict]:
+                         extraction_logger: logging.Logger) -> List[Dict]:
         file_name = os.path.basename(input_file)
         project_name = f"{file_name}_project"
         project_folder = os.path.join(

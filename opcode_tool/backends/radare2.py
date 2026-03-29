@@ -1,7 +1,9 @@
 import os
+import shutil
 import logging
 import argparse
 import subprocess
+from typing import Dict, List
 from contextlib import contextmanager
 
 import r2pipe
@@ -26,6 +28,11 @@ class Radare2Backend(BaseBackend):
         pass
 
     def validate_environment(self) -> None:
+        if not shutil.which('r2'):
+            raise RuntimeError(
+                "Radare2 (r2) not found on PATH. "
+                "Please install Radare2 first."
+            )
         script_path = os.path.join(SCRIPTS_DIR, R2_TIMEOUT_SCRIPT)
         if not os.path.exists(script_path):
             raise RuntimeError(
@@ -37,7 +44,7 @@ class Radare2Backend(BaseBackend):
             )
 
     def extract_features(self, input_file: str, timeout: int,
-                         extraction_logger: logging.Logger) -> list[dict]:
+                         extraction_logger: logging.Logger) -> List[Dict]:
         file_name = os.path.basename(input_file)
 
         # Pre-flight timeout check
