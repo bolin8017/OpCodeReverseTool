@@ -11,6 +11,8 @@ from tqdm import tqdm
 from opcode_tool.backends import get_backend
 
 RESULTS_SUBDIR = "results"
+_EXTRACTION_LOG_FMT = '%(asctime)s - %(levelname)s - %(message)s'
+_TIMING_LOG_FMT = '%(message)s'
 
 
 def setup_output_directory(input_dir: str, custom_output_dir: str = None) -> str:
@@ -28,57 +30,51 @@ def setup_output_directory(input_dir: str, custom_output_dir: str = None) -> str
     return output_dir
 
 
+def _make_logger(name: str, log_file: str, fmt: str,
+                 clear_handlers: bool = False) -> logging.Logger:
+    """Create or get a logger with a file handler."""
+    logger = logging.getLogger(name)
+    if clear_handlers:
+        logger.handlers.clear()
+    if not logger.handlers:
+        logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(log_file)
+        handler.setFormatter(logging.Formatter(fmt))
+        logger.addHandler(handler)
+    return logger
+
+
 def configure_logging(output_dir: str) -> None:
     """Configure logging for the main process.
     Sets up extraction and timing loggers. Worker processes create
     their own loggers via _get_extraction_logger/_get_timing_logger."""
     extraction_log_file = os.path.join(output_dir, 'extraction.log')
     print(f"Logging to: {extraction_log_file}")
-    extraction_logger = logging.getLogger('extraction_logger')
-    extraction_logger.setLevel(logging.INFO)
-    extraction_logger.handlers.clear()
-    handler = logging.FileHandler(extraction_log_file)
-    handler.setFormatter(
-        logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    )
-    extraction_logger.addHandler(handler)
+    _make_logger('extraction_logger', extraction_log_file,
+                 _EXTRACTION_LOG_FMT, clear_handlers=True)
 
     timing_log_file = os.path.join(output_dir, 'timing.log')
     print(f"Timing log: {timing_log_file}")
-    timing_logger = logging.getLogger('timing_logger')
-    timing_logger.setLevel(logging.INFO)
-    timing_logger.handlers.clear()
-    timing_handler = logging.FileHandler(timing_log_file)
-    timing_handler.setFormatter(logging.Formatter('%(message)s'))
-    timing_logger.addHandler(timing_handler)
+    _make_logger('timing_logger', timing_log_file,
+                 _TIMING_LOG_FMT, clear_handlers=True)
 
 
 def _get_extraction_logger(output_dir: str) -> logging.Logger:
     """Get or create extraction logger for a worker process."""
-    logger = logging.getLogger(f'extraction_{os.getpid()}')
-    if not logger.handlers:
-        logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(
-            os.path.join(output_dir, 'extraction.log')
-        )
-        handler.setFormatter(
-            logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        )
-        logger.addHandler(handler)
-    return logger
+    return _make_logger(
+        f'extraction_{os.getpid()}',
+        os.path.join(output_dir, 'extraction.log'),
+        _EXTRACTION_LOG_FMT,
+    )
 
 
 def _get_timing_logger(output_dir: str) -> logging.Logger:
     """Get or create timing logger for a worker process."""
-    logger = logging.getLogger(f'timing_{os.getpid()}')
-    if not logger.handlers:
-        logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(
-            os.path.join(output_dir, 'timing.log')
-        )
-        handler.setFormatter(logging.Formatter('%(message)s'))
-        logger.addHandler(handler)
-    return logger
+    return _make_logger(
+        f'timing_{os.getpid()}',
+        os.path.join(output_dir, 'timing.log'),
+        _TIMING_LOG_FMT,
+    )
 
 
 def collect_files(binary_path: str, output_path: str,

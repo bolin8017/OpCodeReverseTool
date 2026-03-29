@@ -8,7 +8,7 @@ import os
 import sys
 import argparse
 
-from opcode_tool.backends import get_backend, BACKEND_REGISTRY
+from opcode_tool.backends import BACKEND_REGISTRY
 from opcode_tool.common import run
 
 

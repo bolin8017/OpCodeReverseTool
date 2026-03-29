@@ -8,11 +8,8 @@ from contextlib import contextmanager
 
 import r2pipe
 
-from opcode_tool.backends.base import BaseBackend
+from opcode_tool.backends.base import BaseBackend, SCRIPTS_DIR
 
-SCRIPTS_DIR = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), '..', '..', 'scripts')
-)
 R2_TIMEOUT_SCRIPT = 'r2_timeout_check.sh'
 
 
@@ -24,7 +21,6 @@ class Radare2Backend(BaseBackend):
 
     @classmethod
     def add_arguments(cls, parser: argparse.ArgumentParser) -> None:
-        # Radare2 has no additional required arguments
         pass
 
     def validate_environment(self) -> None:

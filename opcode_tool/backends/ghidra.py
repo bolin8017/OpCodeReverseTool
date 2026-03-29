@@ -6,13 +6,11 @@ import argparse
 import subprocess
 from typing import Dict, List
 
-from opcode_tool.backends.base import BaseBackend
+from opcode_tool.backends.base import BaseBackend, SCRIPTS_DIR
 
-SCRIPTS_DIR = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), '..', '..', 'scripts')
-)
 GHIDRA_SCRIPT_NAME = 'ghidra_opcode_script.py'
 GHIDRA_PROJECTS_SUBDIR = 'ghidra_projects'
+_TIMEOUT_EXIT_CODE = 124
 
 
 class GhidraBackend(BaseBackend):
@@ -33,19 +31,18 @@ class GhidraBackend(BaseBackend):
             raise RuntimeError(
                 "Ghidra backend requires -g/--ghidra argument"
             )
-        ghidra_path = os.path.normpath(
+        self._ghidra_path = os.path.normpath(
             os.path.expanduser(self.args.ghidra)
         )
-        if not os.path.exists(ghidra_path):
+        if not os.path.exists(self._ghidra_path):
             raise RuntimeError(
-                f"Ghidra headless analyzer not found at {ghidra_path}"
+                f"Ghidra headless analyzer not found at {self._ghidra_path}"
             )
-        self.args.ghidra = ghidra_path
 
-        script_path = os.path.join(SCRIPTS_DIR, GHIDRA_SCRIPT_NAME)
-        if not os.path.exists(script_path):
+        self._script_path = os.path.join(SCRIPTS_DIR, GHIDRA_SCRIPT_NAME)
+        if not os.path.exists(self._script_path):
             raise RuntimeError(
-                f"Ghidra script not found at {script_path}"
+                f"Ghidra script not found at {self._script_path}"
             )
 
     def extract_features(self, input_file: str, timeout: int,
@@ -59,20 +56,18 @@ class GhidraBackend(BaseBackend):
 
         os.makedirs(project_folder, exist_ok=True)
 
-        script_path = os.path.join(SCRIPTS_DIR, GHIDRA_SCRIPT_NAME)
-
         try:
             result = subprocess.run([
                 'timeout', '--kill-after=10', str(timeout),
-                self.args.ghidra, project_folder, project_name,
+                self._ghidra_path, project_folder, project_name,
                 '-import', input_file,
                 '-noanalysis',
                 '-scriptPath', SCRIPTS_DIR,
-                '-postScript', script_path,
+                '-postScript', self._script_path,
                 temp_csv
             ], capture_output=True, text=True)
 
-            if result.returncode == 124:
+            if result.returncode == _TIMEOUT_EXIT_CODE:
                 extraction_logger.error(
                     f"{file_name}: File analysis timed out "
                     f"after {timeout} seconds"
@@ -95,7 +90,6 @@ class GhidraBackend(BaseBackend):
                 )
                 return []
 
-            # Read temp CSV into list of dicts
             opcodes = []
             with open(temp_csv, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
@@ -114,13 +108,11 @@ class GhidraBackend(BaseBackend):
             )
             return []
         finally:
-            if os.path.exists(project_folder):
-                shutil.rmtree(project_folder, ignore_errors=True)
+            shutil.rmtree(project_folder, ignore_errors=True)
 
     def cleanup(self) -> None:
         """Remove the ghidra_projects temporary directory."""
         ghidra_projects = os.path.join(
             self.output_dir, GHIDRA_PROJECTS_SUBDIR
         )
-        if os.path.exists(ghidra_projects):
-            shutil.rmtree(ghidra_projects, ignore_errors=True)
+        shutil.rmtree(ghidra_projects, ignore_errors=True)

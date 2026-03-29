@@ -1,7 +1,12 @@
+import os
 import argparse
 import logging
 from abc import ABC, abstractmethod
 from typing import Dict, List
+
+SCRIPTS_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', '..', 'scripts')
+)
 
 
 class BaseBackend(ABC):
