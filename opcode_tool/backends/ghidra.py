@@ -16,7 +16,7 @@ _TIMEOUT_EXIT_CODE = 124
 class GhidraBackend(BaseBackend):
     """Ghidra-based opcode extraction backend."""
 
-    # Ghidra spends most time waiting for I/O
+    # JVM startup overhead allows overlapping multiple Ghidra processes
     worker_multiplier = 2
 
     def __init__(self, args: argparse.Namespace, output_dir: str):
@@ -77,9 +77,12 @@ class GhidraBackend(BaseBackend):
                 return []
 
             if result.returncode != 0:
+                stderr_tail = (result.stderr[-500:]
+                               if result.stderr else "no output")
                 extraction_logger.error(
                     f"{file_name}: Ghidra analysis failed "
-                    f"with exit code {result.returncode}"
+                    f"with exit code {result.returncode}. "
+                    f"Ghidra output: {stderr_tail}"
                 )
                 return []
 
@@ -105,7 +108,7 @@ class GhidraBackend(BaseBackend):
             return opcodes
 
         except Exception as e:
-            extraction_logger.error(
+            extraction_logger.exception(
                 f"{file_name}: Unexpected error - {e}"
             )
             return []

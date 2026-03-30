@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-"""OpCodeReverseTool - Unified opcode extraction from binary files.
-
-Supports multiple reverse engineering backends through a single CLI.
-"""
+"""Command-line interface for OpCodeReverseTool."""
 
 import os
 import sys
@@ -65,8 +61,8 @@ def main() -> None:
         print(f"Error: Directory not found: {args.directory}")
         sys.exit(1)
 
-    run(args.backend, args)
-
-
-if __name__ == '__main__':
-    main()
+    try:
+        run(args.backend, args)
+    except RuntimeError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
