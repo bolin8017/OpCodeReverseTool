@@ -3,7 +3,7 @@
 Runs inside Ghidra's headless analyzer environment.
 Receives one argument: the path where the temp CSV should be written.
 
-Uses .format() instead of f-strings for Jython/Ghidrathon compatibility.
+Uses .format() instead of f-strings for Ghidrathon compatibility.
 """
 import os
 import csv

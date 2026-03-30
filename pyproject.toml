@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opcode-reverse-tool"
+version = "1.0.0"
+description = "Unified binary opcode extraction from binary files"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [{name = "PolinLai"}]
+keywords = ["reverse-engineering", "binary-analysis", "opcode", "ghidra", "radare2", "malware-analysis"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Security",
+    "Intended Audience :: Developers",
+]
+dependencies = [
+    "r2pipe",
+    "tqdm",
+]
+
+[project.urls]
+Homepage = "https://github.com/bolin8017/OpCodeReverseTool"
+Repository = "https://github.com/bolin8017/OpCodeReverseTool"
+"Bug Tracker" = "https://github.com/bolin8017/OpCodeReverseTool/issues"
+Changelog = "https://github.com/bolin8017/OpCodeReverseTool/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = ["ruff", "pytest", "pre-commit"]
+
+[project.scripts]
+get-opcode = "opcode_tool.cli:main"
+
+[tool.setuptools.package-data]
+opcode_tool = ["scripts/*"]
+
+[tool.ruff]
+target-version = "py38"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

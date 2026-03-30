@@ -1,6 +1,6 @@
 # OpCodeReverseTool
 
-[English](README.md) | [繁體中文](README.zh-TW.md)
+[English](README.md) | [繁體中文](docs/README.zh-TW.md)
 
 A unified binary opcode extraction framework for security researchers and reverse engineers. Extract operation codes (opcodes) from binary files using a single CLI, regardless of which reverse engineering backend you use.
 

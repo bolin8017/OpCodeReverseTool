@@ -134,6 +134,9 @@ def _extraction_worker(backend_name: str, args, input_file: str,
         execution_time = time.perf_counter() - start_time
 
         if not opcodes:
+            extraction_logger.warning(
+                f"{filename}: Backend returned no features, skipping"
+            )
             return 0.0
 
         write_csv(opcodes, output_csv)
@@ -159,15 +162,21 @@ def _extraction_worker(backend_name: str, args, input_file: str,
 
 
 def parallel_process(files: List[Tuple[str, str, str]], backend_name: str,
-                     args, output_dir: str, timeout: int) -> None:
-    """Process extraction tasks in parallel."""
+                     args, output_dir: str, timeout: int,
+                     worker_multiplier: int) -> None:
+    """Process extraction tasks in parallel.
+
+    Args:
+        worker_multiplier: Factor multiplied by CPU count to determine
+            max worker processes (e.g. 2 for Ghidra, 1 for Radare2).
+    """
     if not files:
         print("No files to process.")
         return
 
-    backend_cls = get_backend(backend_name)
     cpu_count = os.cpu_count() or 1
-    max_workers = min(cpu_count * backend_cls.worker_multiplier, len(files))
+    max_workers = min(cpu_count * worker_multiplier, len(files))
+    succeeded = 0
 
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = [
@@ -180,8 +189,16 @@ def parallel_process(files: List[Tuple[str, str, str]], backend_name: str,
         ]
         with tqdm(total=len(futures), desc="Processing files",
                   unit="file") as pbar:
-            for _ in as_completed(futures):
+            for future in as_completed(futures):
+                try:
+                    if future.result() > 0.0:
+                        succeeded += 1
+                except Exception:
+                    pass
                 pbar.update(1)
+
+    failed = len(files) - succeeded
+    print(f"Results: {succeeded} succeeded, {failed} failed/skipped")
 
 
 def run(backend_name: str, args) -> None:
@@ -199,7 +216,9 @@ def run(backend_name: str, args) -> None:
         return
 
     print(f"Found {len(files)} files to process")
-    parallel_process(files, backend_name, args, output_dir, args.timeout)
-
-    backend.cleanup()
+    try:
+        parallel_process(files, backend_name, args, output_dir, args.timeout,
+                         backend_cls.worker_multiplier)
+    finally:
+        backend.cleanup()
     print("Extraction complete.")

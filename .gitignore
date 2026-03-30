@@ -41,12 +41,9 @@ ghidra_projects/
 
 # Project specific - Log files
 *.log
-extraction.log
-timing.log
 
 # Project specific - Test data and binaries
 test_data/
-test_binaries/
 sample_binaries/
 
 # Temporary files
@@ -61,6 +58,9 @@ sample_binaries/
 *.gpr
 *.rep/
 *.lock
+
+# Claude Code
+.claude/
 
 # Superpowers docs (local only)
 docs/superpowers/
