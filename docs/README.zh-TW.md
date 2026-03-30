@@ -1,6 +1,6 @@
 # OpCodeReverseTool
 
-[English](README.md) | [繁體中文](README.zh-TW.md)
+[English](../README.md) | [繁體中文](README.zh-TW.md)
 
 統一的二進位檔案 opcode 提取框架，專為安全研究人員和逆向工程師設計。無論使用哪種逆向工程後端，都能透過單一 CLI 介面從二進位檔案中提取操作碼（opcodes）。
 
